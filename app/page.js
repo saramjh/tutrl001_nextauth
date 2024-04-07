@@ -1,10 +1,12 @@
 "use client"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 export default function Home() {
 	const [error, setError] = useState("")
 
+	const router = useRouter()
 	const isValidEmail = (email) => {
 		const res = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 		return res.test(String(email).toLowerCase())
@@ -19,6 +21,30 @@ export default function Home() {
 		if (!isValidEmail(email)) {
 			setError("Invalid email")
 			return
+		}
+
+		if (!password || password.length < 6) {
+			setError("Password must be at least 6 characters")
+			return
+		}
+
+		try {
+			const res = await fetch("/api/auth/register", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ name, email, password }),
+			})
+			if (res.status === 400) {
+				setError("Email already exists")
+			}
+			if (res.status === 200) {
+				setError("Registration successful")
+				router.push("/login")
+			}
+		} catch (error) {
+			console.log(error)
 		}
 	}
 

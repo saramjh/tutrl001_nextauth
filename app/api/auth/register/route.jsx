@@ -4,19 +4,19 @@ import { NextResponse } from "next/server"
 import bcrypt from "bcrypt"
 
 const saltRounds = 10
-const someOtherPlaintextPassword = "not_bacon"
 
 export async function POST(req) {
-	const newUsrData = await req.json()
+	const { name, email, password } = await req.json()
+
+	if (!name || !email || !password) return NextResponse.json({ message: "invalid data" }, { status: 400 })
 	await connectDB()
-	const { name, email, password } = newUsrData
-	if (!name || !email || !password) return NextResponse.json({ message: "invalid data" })
+	const existingUser = await User.findOne({ email })
+	console.log(existingUser)
+
+	if (existingUser) return NextResponse.json({ message: "Email already exists" }, { status: 400 })
+
 	const hashed = await bcrypt.hash(password, saltRounds)
 	User.create({ name, email, password: hashed })
-	const validPassword = await bcrypt.compare(password, hashed)
-	if (validPassword) {
-		return NextResponse.json({ message: "This it the right password" })
-	} else {
-		return NextResponse.json({ message: "This is the wrong password" })
-	}
+
+	return NextResponse.json({ message: "Registration successful" }, { status: 200 })
 }
