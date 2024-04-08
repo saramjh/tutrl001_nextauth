@@ -2,6 +2,8 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import { signIn, useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 const isValidEmail = (email) => {
 	const res = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -10,7 +12,8 @@ const isValidEmail = (email) => {
 
 export default function Login() {
 	const [error, setError] = useState("")
-
+	const { data: session, status: sessionStatus } = useSession()
+	const router = useRouter()
 	const handleSubmit = async (e) => {
 		e.preventDefault()
 		const email = e.target[0].value
@@ -30,7 +33,7 @@ export default function Login() {
 			return
 		}
 
-		const res = await fetch("/api/auth/login", {
+		const result = await fetch("/api/auth/login", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -38,11 +41,23 @@ export default function Login() {
 			body: JSON.stringify({ email, password }),
 		})
 
-		if (res.status === 200) {
+		if (result.status === 200) {
 			setError("Login successful")
 		}
-		if (res.status === 401) {
+		if (result.status === 401) {
 			setError("Invalid email or password")
+		}
+		const res = await signIn("credentials", {
+			redirect: false,
+			email,
+			password,
+		})
+
+		if (res?.error) {
+			setError("Invalid email or password")
+			if (res?.url) router.replace("/dashboard")
+		} else {
+			setError("")
 		}
 	}
 
@@ -57,13 +72,13 @@ export default function Login() {
 						<div className="label">
 							<span className="label-text  text-xs">Email</span>
 						</div>
-						<input type="email" placeholder="Email Address" className="input input-bordered w-full max-w-xs" />
+						<input type="email" placeholder="Email Address" className="input input-bordered w-full max-w-xs" required />
 					</label>
 					<label className="form-control w-full max-w-xs">
 						<div className="label">
 							<span className="label-text text-xs">Password</span>
 						</div>
-						<input type="password" placeholder="Enter Password" className="input input-bordered w-full max-w-xs" />
+						<input type="password" placeholder="Enter Password" className="input input-bordered w-full max-w-xs" required />
 						<div className="label">
 							<Link href={"/"}>
 								<span className="label-text-alt text-gray-500 hover:text-black">Forget Password?</span>
