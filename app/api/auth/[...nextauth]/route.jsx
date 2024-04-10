@@ -3,10 +3,9 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { Account, User as AuthUser } from "next-auth"
 import connectDB from "@/libs/connectDB"
 import User from "@/model/UserModel"
-import { bcrypt } from "bcrypt"
+import bcrypt from "bcrypt"
 
 export const authOptions = {
-	secret: process.env.SECRET_KEY,
 	providers: [
 		CredentialsProvider({
 			id: "credentials",
@@ -20,8 +19,8 @@ export const authOptions = {
 				try {
 					const user = await User.findOne({ email: credentials.email })
 					if (user) {
-						const isPasswordCorrect = await bcrypt.compare(credentials.password, user.password)
-						if (isPasswordCorrect) {
+						const match = await bcrypt.compare(credentials.password, user.password)
+						if (match) {
 							return user
 						}
 					}
@@ -31,6 +30,7 @@ export const authOptions = {
 			},
 		}),
 	],
+	secret: process.env.NEXTAUTH_SECRET,
 	callbacks: {
 		async signIn({ user, account }) {
 			if (account?.provider == "credentials") {

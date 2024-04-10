@@ -17,7 +17,6 @@ const UserSchema = new Schema(
 			type: String,
 			required: [true, "Must provide password"],
 			minlength: 6,
-			select: false,
 			trim: true,
 		},
 		role: {
