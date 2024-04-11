@@ -8,8 +8,8 @@ const Dashboard = async () => {
 		redirect("/login")
 	}
 	return (
-		<div>
-			<h1>Dashboard</h1>
+		<div className="flex flex-col justify-between items-center p-10">
+			<h1 className="text-4xl">Dashboard</h1>
 			<h1>{session.user?.name}</h1>
 			<h1>{session.user?.email}</h1>
 		</div>
