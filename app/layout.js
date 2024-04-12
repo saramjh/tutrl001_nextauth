@@ -1,6 +1,6 @@
 import { Inter } from "next/font/google"
 import "./globals.css"
-import Navbar from "@/components/Navbar"
+import Navbar from "../components/Navbar"
 import { getServerSession } from "next-auth"
 import SessionProvider from "../components/SessionProvider"
 
